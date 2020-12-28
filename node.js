@@ -17,13 +17,6 @@ const connection = mysql.createConnection({
     database: 'employee_trackerDB',
 });
 
-// const start = () => {
-//     connection.query('SELECT * FROM employee', (err, results) => {
-//         if (err) throw err;
-//         console.table(results)
-//     });
-// }
-
 const start = () => {
     inquirer
         .prompt({
@@ -54,30 +47,12 @@ const start = () => {
 
 const viewEmployees = () => {
     connection.query(
-        'SELECT employee.id, first_name, last_name, title, name AS department, salary, CONCAT(first_name," ",last_name) AS manager FROM employee LEFT JOIN employee ON employee.id = employee.manager_id LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN department ON roles.department_id = department.id', (err, results) => {
+        'SELECT employee.id, employee.first_name, employee.last_name, title, name AS department, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN department ON roles.department_id = department.id LEFT JOIN employee m ON m.id = employee.manager_id', (err, results) => {
             if (err) throw err;
             console.table(results)
             start();
         });
-
 };
-
-
-// CONCAT(m.first_name," ", m.last_name) AS manager
-// LEFT JOIN m.id = e.manager_id 
-//  INNER JOIN department ON roles.depart_id = department.id
-
-
-// SELECT * FROM department;
-// SELECT * FROM roles;
-// SELECT * FROM employee;
-
-// SELECT first_name, last_name, roles_id, manager_id
-// FROM employee
-// INNER JOIN roles ON employee.manager_id = employee.id;
-
-
-
 
 
 
