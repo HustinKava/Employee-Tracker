@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const password = require('./password');
-const consoleTable = require('console.table')
+// const consoleTable = require('console.table')
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -54,6 +54,64 @@ const viewEmployees = () => {
         });
 };
 
+const viewEmployeesByDepartment = () => {
+    inquirer
+        .prompt({
+            name: 'viewDepartment',
+            type: 'list',
+            message: 'Which department would you like to view?',
+            choices: ['Finance & Accounting', 'Human Resources', 'Contracts', 'Purchasing', 'Planning', 'IT'],
+        })
+        .then((answer) => {
+            // based on their answer a function will execute
+            if (answer.viewDepartment === 'Finance & Accounting') {
+                // console.log('-----------------------------------Finance & Accounting-----------------------------------')
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 1', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else if (answer.viewDepartment === 'Human Resources') {
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 2', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else if (answer.viewDepartment === 'Contracts') {
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 3', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else if (answer.viewDepartment === 'Purchasing') {
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 4', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else if (answer.viewDepartment === 'Planning') {
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 5', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else if (answer.viewDepartment === 'IT') {
+                connection.query(
+                    'SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN employee m ON m.id = employee.manager_id INNER JOIN department ON roles.department_id = department.id WHERE department.id = 6', (err, results) => {
+                        if (err) throw err;
+                        console.table(results)
+                        start();
+                    });
+            } else {
+                connection.end();
+            }
+        });
+}
 
 
 
