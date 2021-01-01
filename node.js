@@ -114,31 +114,23 @@ const viewEmployeesByManager = () => {
                 })
                 .then((answer) => {
 
-                    console.log(managerChoices)
+                    // console.log(managerChoices)
 
                     connection.query(
-                        `SELECT employee.first_name 
-                        FROM employee 
-                        LEFT JOIN roles ON employee.manager_id = manager_id 
-                        WHERE roles_id = '${answer.viewManager}'
+                        `
+                        SELECT e.id, e.first_name, e.last_name
+                        FROM employee e
+                        INNER JOIN employee m ON CONCAT(m.first_name," ",m.last_name) = '${answer.viewManager}'
+                        WHERE e.manager_id = m.roles_id
                         `,
                         (err, results) => {
                             if (err) throw err;
                             console.table(results);
-                            console.log(answer)
+                            // console.log(answer)
                         })
                 })
         })
 }
-
-// INNER JOIN department ON roles.department_id = department.id
-// WHERE e.manager_id = $ { managerChoices }
-
-// give all employees based on manger_id
-// show employees depending on manager id
-// roles_id = manager_id
-// answer will give manager name, 
-// INNER JOIN employee m ON m.manager_id = m.roles_id WHERE m.roles_id = '${answer.roles_id}''
 
 
 
