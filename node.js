@@ -18,7 +18,7 @@ const mainMenu = () => {
             name: 'first',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Update Employee Role', 'Update Employee Manager'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Update Employee Role', 'Update Employee Manager'],
         })
         .then((answer) => {
             // based on their answer a function will execute
@@ -28,6 +28,8 @@ const mainMenu = () => {
                 viewEmployeesByDepartment();
             } else if (answer.first === 'View All Employees By Manager') {
                 viewEmployeesByManager();
+            } else if (answer.first === 'View All Employees by Roles') {
+                viewEmployeesByRoles();
             } else if (answer.first === 'Add Employee') {
                 addEmployee();
             } else if (answer.first === 'Update Employee Role') {
@@ -42,7 +44,14 @@ const mainMenu = () => {
 
 const viewEmployees = () => {
     connection.query(
-        'SELECT employee.id, employee.first_name, employee.last_name, title, name AS department, salary, CONCAT(m.first_name," ",m.last_name) AS manager FROM employee LEFT JOIN roles ON employee.roles_id = roles.id LEFT JOIN department ON roles.department_id = department.id LEFT JOIN employee m ON m.id = employee.manager_id', (err, results) => {
+        `
+        SELECT employee.id, employee.first_name, employee.last_name, title, name AS department, salary, CONCAT(m.first_name," ",m.last_name) AS manager 
+        FROM employee 
+        LEFT JOIN roles ON employee.roles_id = roles.id 
+        LEFT JOIN department ON roles.department_id = department.id 
+        LEFT JOIN employee m ON m.id = employee.manager_id
+        `,
+        (err, results) => {
             if (err) throw err;
             console.table(results)
             mainMenu();
@@ -54,7 +63,11 @@ let departmentChoices = []
 
 const viewEmployeesByDepartment = () => {
     connection.query(
-        'SELECT name FROM department', (err, results) => {
+        `
+        SELECT name 
+        FROM department
+        `,
+        (err, results) => {
             if (err) throw err;
             // console.log(results);
             // console.table(results)
@@ -72,11 +85,13 @@ const viewEmployeesByDepartment = () => {
                 })
                 .then((answer) => {
                     connection.query(
-                        `SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager 
+                        `
+                        SELECT employee.id, employee.first_name, employee.last_name, title, salary, CONCAT(m.first_name," ",m.last_name) AS manager 
                         FROM employee 
                         LEFT JOIN roles ON employee.roles_id = roles.id 
                         LEFT JOIN employee m ON m.id = employee.manager_id 
-                        INNER JOIN department ON roles.department_id = department.id WHERE department.name = '${answer.viewDepartment}'`,
+                        INNER JOIN department ON roles.department_id = department.id WHERE department.name = '${answer.viewDepartment}'
+                        `,
                         (err, results) => {
                             if (err) throw err;
                             console.table(results);
@@ -86,20 +101,22 @@ const viewEmployeesByDepartment = () => {
                 })
 
         })
-}
+};
 
 let managerChoices = [];
 
 const viewEmployeesByManager = () => {
     connection.query(
-        `SELECT employee.roles_id, CONCAT(employee.first_name," ",employee.last_name) AS manager  
-        FROM employee WHERE employee.manager_id IS NULL`,
+        `
+        SELECT employee.roles_id, CONCAT(employee.first_name," ",employee.last_name) AS manager  
+        FROM employee WHERE employee.manager_id IS NULL
+        `,
         (err, results) => {
             if (err) throw err;
             // console.log(results);
             for (let i = 0; i < results.length; i++) {
 
-                let manager = { name: results[i].manager, roles_id: results[i].roles_id }
+                let manager = { name: results[i].manager }
                     // managerChoices.push(results[i].manager);
                 managerChoices.push(manager);
                 // console.log(managerChoices)
@@ -118,8 +135,10 @@ const viewEmployeesByManager = () => {
 
                     connection.query(
                         `
-                        SELECT e.id, e.first_name, e.last_name
+                        SELECT e.id, e.first_name, e.last_name, title, name AS department, salary
                         FROM employee e
+                        LEFT JOIN roles ON e.roles_id = roles.id
+                        LEFT JOIN department ON roles.department_id = department.id
                         INNER JOIN employee m ON CONCAT(m.first_name," ",m.last_name) = '${answer.viewManager}'
                         WHERE e.manager_id = m.roles_id
                         `,
@@ -127,11 +146,54 @@ const viewEmployeesByManager = () => {
                             if (err) throw err;
                             console.table(results);
                             // console.log(answer)
+                            mainMenu()
                         })
                 })
         })
-}
+};
 
+let rolesChoices = []
+    // console.log(choicesTest)
+
+const viewEmployeesByRoles = () => {
+    connection.query(
+        `
+        SELECT title
+        FROM roles
+        `,
+        (err, results) => {
+            if (err) throw err;
+
+            for (let i = 0; i < results.length; i++) {
+                rolesChoices.push(results[i].title);
+                // console.log(choicesTest)
+            }
+            inquirer
+                .prompt({
+                    name: 'viewRoles',
+                    type: 'list',
+                    message: 'Which department would you like to view?',
+                    choices: rolesChoices
+                })
+                .then((answer) => {
+                    connection.query(
+                        `
+                        SELECT employee.id, employee.first_name, employee.last_name, name AS department, salary
+                        FROM roles
+                        LEFT JOIN department ON roles.department_id = department.id
+                        INNER JOIN employee ON roles_id = roles.id
+                        WHERE roles.title = '${answer.viewRoles}'
+                        `,
+                        (err, results) => {
+                            if (err) throw err;
+                            console.table(results);
+                            // console.log(answer)
+                            mainMenu()
+                        })
+                })
+
+        })
+};
 
 
 // connect to the mysql server and sql database
