@@ -84,3 +84,4 @@ SELECT * FROM employee;
 -- SELECT first_name, last_name, roles_id, manager_id
 -- FROM employee
 -- INNER JOIN roles ON employee.manager_id = employee.id;
+-- SOURCE DB/schema.sql 
