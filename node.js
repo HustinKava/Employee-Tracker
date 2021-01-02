@@ -297,6 +297,35 @@ const addEmployee = () => {
 
 };
 
+const addDepartment = () => {
+    inquirer
+        .prompt({
+            name: 'departmentName',
+            type: 'input',
+            message: 'What is the name of the new department?',
+            validate: (value) => {
+                if (value) {
+                    return true;
+                } else {
+                    return 'You need to enter the department name';
+                }
+            }
+        })
+        .then((answer) => {
+            connection.query(
+                'INSERT INTO department SET ?', {
+                    name: answer.departmentName
+                },
+                (err, res) => {
+                    if (err) return err;
+
+                    console.log(`\n The new department named ${answer.departmentName} has been added \n`)
+                    mainMenu();
+                }
+            )
+        })
+};
+
 
 // connect to the mysql server and sql database
 connection.connect((err) => {
