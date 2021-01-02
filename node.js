@@ -326,6 +326,83 @@ const addDepartment = () => {
         })
 };
 
+let deptNames = [];
+
+const addRole = () => {
+    connection.query(
+        `
+        SELECT name 
+        FROM department
+        `,
+        (err, department) => {
+            if (err) throw err;
+
+            for (let i = 0; i < department.length; i++) {
+                deptNames.push(department[i].name);
+            }
+            // console.log(deptNames)
+
+            inquirer
+                .prompt([{
+                        name: 'roleName',
+                        type: 'input',
+                        message: 'What is the name of the role?',
+                        validate: (value) => {
+                            if (value) {
+                                return true;
+                            } else {
+                                return 'You need to enter name of the role';
+                            }
+                        }
+                    },
+                    {
+                        name: 'salary',
+                        type: 'number',
+                        message: 'Please enter the expected salary for this role',
+                        validate: (value) => {
+                            if (isNaN(value)) {
+                                return 'You need to enter a valid salary number';
+                            } else {
+                                return true;
+                            }
+                        }
+                    },
+                    {
+                        name: 'deptName',
+                        type: 'list',
+                        message: 'Please select the correct department to place this role in',
+                        choices: deptNames
+                    }
+                ])
+                .then((answer) => {
+
+                    let deptID;
+
+                    for (let i = 0; i < department.length; i++) {
+                        if (answer.deptName == department[i].name) {
+                            deptID = department[i].id
+                        }
+                    }
+
+                    connection.query(
+                        'INSERT INTO roles SET ?', {
+                            title: answer.roleName,
+                            salary: answer.salary,
+                            department_id: deptID
+                        },
+                        (err, res) => {
+                            if (err) return err;
+
+                            console.log(`\n The new role named ${answer.roleName} has been added \n`)
+                            mainMenu();
+                        }
+                    )
+
+                })
+        })
+};
+
+
 
 // connect to the mysql server and sql database
 connection.connect((err) => {
