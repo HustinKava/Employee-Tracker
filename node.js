@@ -18,7 +18,7 @@ const mainMenu = () => {
             name: 'first',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Update Employee Role', 'Update Employee Manager'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager'],
         })
         .then((answer) => {
             // based on their answer a function will execute
@@ -32,6 +32,10 @@ const mainMenu = () => {
                 viewEmployeesByRoles();
             } else if (answer.first === 'Add Employee') {
                 addEmployee();
+            } else if (answer.first === 'Add Department') {
+                addDepartment();
+            } else if (answer.first === 'Add Role') {
+                addRole();
             } else if (answer.first === 'Update Employee Role') {
                 updateEmployeeRole();
             } else if (answer.first === 'Update Employee Manager') {
@@ -59,7 +63,6 @@ const viewEmployees = () => {
 };
 
 let departmentChoices = []
-    // console.log(choicesTest)
 
 const viewEmployeesByDepartment = () => {
     connection.query(
@@ -69,12 +72,9 @@ const viewEmployeesByDepartment = () => {
         `,
         (err, results) => {
             if (err) throw err;
-            // console.log(results);
-            // console.table(results)
 
             for (let i = 0; i < results.length; i++) {
                 departmentChoices.push(results[i].name);
-                // console.log(choicesTest)
             }
             inquirer
                 .prompt({
@@ -95,7 +95,6 @@ const viewEmployeesByDepartment = () => {
                         (err, results) => {
                             if (err) throw err;
                             console.table(results);
-                            // console.log(answer)
                             mainMenu()
                         })
                 })
@@ -117,10 +116,8 @@ const viewEmployeesByManager = () => {
             for (let i = 0; i < results.length; i++) {
 
                 let manager = { name: results[i].manager }
-                    // managerChoices.push(results[i].manager);
                 managerChoices.push(manager);
-                // console.log(managerChoices)
-                // console.log(manager)
+
             }
             inquirer
                 .prompt({
@@ -130,8 +127,6 @@ const viewEmployeesByManager = () => {
                     choices: managerChoices
                 })
                 .then((answer) => {
-
-                    // console.log(managerChoices)
 
                     connection.query(
                         `
@@ -145,7 +140,6 @@ const viewEmployeesByManager = () => {
                         (err, results) => {
                             if (err) throw err;
                             console.table(results);
-                            // console.log(answer)
                             mainMenu()
                         })
                 })
@@ -153,7 +147,6 @@ const viewEmployeesByManager = () => {
 };
 
 let rolesChoices = []
-    // console.log(choicesTest)
 
 const viewEmployeesByRoles = () => {
     connection.query(
@@ -166,13 +159,12 @@ const viewEmployeesByRoles = () => {
 
             for (let i = 0; i < results.length; i++) {
                 rolesChoices.push(results[i].title);
-                // console.log(choicesTest)
             }
             inquirer
                 .prompt({
                     name: 'viewRoles',
                     type: 'list',
-                    message: 'Which department would you like to view?',
+                    message: 'Which role would you like to view?',
                     choices: rolesChoices
                 })
                 .then((answer) => {
@@ -187,12 +179,122 @@ const viewEmployeesByRoles = () => {
                         (err, results) => {
                             if (err) throw err;
                             console.table(results);
-                            // console.log(answer)
                             mainMenu()
                         })
                 })
 
         })
+};
+
+let newEmpRole = [];
+let newEmpManager = [];
+
+const addEmployee = () => {
+    connection.query(
+        `
+        SELECT id, title
+        FROM roles
+        `,
+        (err, roles) => {
+            if (err) throw err;
+
+            for (let i = 0; i < roles.length; i++) {
+                newEmpRole.push(roles[i].title);
+            }
+            connection.query(
+                `
+                SELECT employee.id, employee.roles_id, CONCAT(employee.first_name," ",employee.last_name) AS manager  
+                FROM employee WHERE employee.manager_id IS NULL
+                `,
+                (err, manager) => {
+                    if (err) throw err;
+                    // console.log(results);
+                    for (let i = 0; i < manager.length; i++) {
+
+                        let newEmpMan = { name: manager[i].manager }
+                        newEmpManager.push(newEmpMan);
+                    }
+
+                    // Option to select no manager
+                    newEmpManager.unshift('No Manager');
+
+                    inquirer
+                        .prompt([{
+                            name: 'firstName',
+                            type: 'input',
+                            message: 'What is your new employees first name?',
+                            validate: (value) => {
+                                if (value) {
+                                    return true;
+                                } else {
+                                    return 'You need to enter their first name';
+                                }
+                            }
+                        }, {
+                            name: 'lastName',
+                            type: 'input',
+                            message: 'What is your new employees last name?',
+                            validate: (value) => {
+                                if (value) {
+                                    return true;
+                                } else {
+                                    return 'You need to enter their last name';
+                                }
+                            }
+                        }, {
+                            name: 'selectRole',
+                            type: 'list',
+                            message: 'Please select your employees role',
+                            choices: newEmpRole
+                        }, {
+                            name: 'selectManager',
+                            type: 'list',
+                            message: 'Who is your new employees manager?',
+                            choices: newEmpManager
+                        }])
+                        .then((answer) => {
+
+                            // Set variable for IDs
+                            let roleID;
+                            // Default Manager value as null
+                            let managerID = null;
+
+                            // Getting the role.id
+                            for (i = 0; i < roles.length; i++) {
+                                if (answer.selectRole == roles[i].title) {
+                                    roleID = roles[i].id;
+                                    // console.log(`role id is ${roleID}`)
+                                }
+                            }
+
+                            // getting the manager_id
+                            for (i = 0; i < manager.length; i++) {
+                                if (answer.selectManager == manager[i].manager) {
+                                    managerID = manager[i].id;
+                                    // console.log(`manager id is ${managerID}`)
+                                }
+                            }
+
+                            connection.query(
+                                'INSERT INTO employee SET ?', {
+                                    first_name: answer.firstName,
+                                    last_name: answer.lastName,
+                                    roles_id: roleID,
+                                    manager_id: managerID
+                                },
+                                (err, res) => {
+                                    if (err) return err;
+
+                                    console.log(`\n The new employee named ${answer.firstName} ${answer.lastName} has been added \n`)
+                                    mainMenu();
+                                }
+                            )
+
+                        })
+                })
+
+        })
+
 };
 
 
