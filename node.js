@@ -1,7 +1,9 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const password = require('./password');
-const consoleTable = require('console.table')
+const consoleTable = require('console.table');
+const logo = require('asciiart-logo');
+
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -11,6 +13,32 @@ const connection = mysql.createConnection({
     password: `${password}`,
     database: 'employee_trackerDB',
 });
+
+// connect to the mysql server and sql database
+connection.connect((err) => {
+    if (err) throw err;
+    start();
+});
+
+const start = () => {
+    console.log(
+        logo({
+            name: 'Employee Tracker',
+            font: 'Big Money-nw',
+            lineChars: 25,
+            padding: 2,
+            margin: 3,
+            borderColor: 'green',
+            logoColor: 'bold-white',
+            textColor: 'green',
+        })
+        .emptyLine()
+        .right("https://github.com/HustinKava")
+        .render()
+    );
+    mainMenu();
+}
+
 
 const mainMenu = () => {
     inquirer
@@ -818,12 +846,3 @@ const viewDepartmentBudget = () => {
                 })
         })
 };
-
-// connect to the mysql server and sql database
-connection.connect((err) => {
-    if (err) throw err;
-    // run the mainMenu function after the connection is made to prompt the user
-    mainMenu();
-});
-
-// chalk/kolor
