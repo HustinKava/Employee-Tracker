@@ -704,7 +704,64 @@ const deleteRole = () => {
         })
 };
 
+let deleteDepartments = [];
 
+const deleteDepartment = () => {
+    connection.query(
+        `
+        SELECT id, name AS department
+        FROM department
+        `,
+        (err, departments) => {
+            if (err) throw err;
+
+            for (let i = 0; i < departments.length; i++) {
+                deleteDepartments.push(departments[i].department);
+            }
+            inquirer
+                .prompt(
+                    [{
+                        name: 'delDepartment',
+                        type: 'list',
+                        message: 'Select the department that you wish to delete',
+                        choices: deleteDepartments
+                    }, {
+                        name: 'areYouSure',
+                        type: 'list',
+                        message: 'Are you sure you want to delete this department? All employees and roles associated with this department will also be removed',
+                        choices: ['Yes', 'No']
+                    }]
+                )
+                .then((answer) => {
+
+                    if (answer.areYouSure === 'Yes') {
+
+                        let deptID;
+
+                        for (let i = 0; i < departments.length; i++) {
+                            if (answer.delDepartment === departments[i].department) {
+                                deptID = departments[i].id;
+                            }
+                        }
+
+                        // console.log(roleID)
+
+                        connection.query(
+                            `DELETE FROM department WHERE id = '${deptID}'`,
+                            (err, res) => {
+                                if (err) return err;
+
+                                console.log(`\n The department named ${answer.delDepartment} has been terminated! \n`)
+                                mainMenu();
+                            })
+                    } else {
+
+                        console.log(`\n The department named ${answer.delDepartment} has not been terminated \n`)
+                        mainMenu();
+                    }
+                })
+        })
+};
 
 
 // connect to the mysql server and sql database
