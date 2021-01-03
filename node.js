@@ -600,49 +600,45 @@ const deleteEmployee = () => {
             }
             inquirer
                 .prompt(
-                    // [
-                    {
+                    [{
                         name: 'delName',
                         type: 'list',
                         message: 'Select the employee name of who you wish to terminate',
                         choices: deleteNames
-                    }
-                    // , {
-                    //     name: 'areYouSure',
-                    //     type: 'list',
-                    //     message: 'Are you sure you want to terminate this employee?',
-                    //     choices: ['Yes', 'No']
-                    // }
-                    // ]
+                    }, {
+                        name: 'areYouSure',
+                        type: 'list',
+                        message: 'Are you sure you want to terminate this employee?',
+                        choices: ['Yes', 'No']
+                    }]
                 )
                 .then((answer) => {
 
-                    // if (answer.areYouSure === 'Yes') {
+                    if (answer.areYouSure === 'Yes') {
 
-                    let employeeID;
+                        let employeeID;
 
-                    for (let i = 0; i < names.length; i++) {
-                        if (answer.delName === names[i].employees) {
-                            employeeID = names[i].id;
+                        for (let i = 0; i < names.length; i++) {
+                            if (answer.delName === names[i].employees) {
+                                employeeID = names[i].id;
+                            }
                         }
-                    }
 
-                    console.log(employeeID)
+                        // console.log(employeeID)
 
-                    connection.query(
-                            'DELETE FROM employee WHERE id = employeeID',
+                        connection.query(
+                            `DELETE FROM employee WHERE id = '${employeeID}'`,
                             (err, res) => {
                                 if (err) return err;
 
                                 console.log(`\n The employee named ${answer.delName} has been terminated! \n`)
                                 mainMenu();
-                            }
-                        )
-                        // } else {
+                            })
+                    } else {
 
-                    //     console.log(`\n The employee named ${answer.delName} has not been terminated \n`)
-                    //     mainMenu();
-                    // }
+                        console.log(`\n The employee named ${answer.delName} has not been terminated \n`)
+                        mainMenu();
+                    }
                 })
         })
 };
