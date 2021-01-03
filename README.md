@@ -14,7 +14,7 @@ For homework assignment 12 I had to create an Employee Tracker application where
 - [License](#License)
 
 ## Technologies Used
-For this CLI application I used Mysql, Node, Inquirer, JavaScript, Console.Table and Asciiart-Logo
+For this CLI application I used Mysql, Node, Inquirer, JavaScript, Console.Table, Asciiart-Logo and Chalk.
 
 ## Installation
 This application is easy to install, just clone the repository and run the following command in your terminal. You will however need to create a file named password.js. Within the password.js file you will need to create a variable that will hold your password and export the variable for privacy.
@@ -55,7 +55,7 @@ Based on the user selection. The user can view, add, update, delete or exit the 
 ![](Screenshots/Screenshot2.PNG)
 
 ## Video Walkthrough  
-Please click **[Here](https://youtu.be/mR7uePdATIk)** to view a video on the application
+Please click **[Here](https://youtu.be/g9tlIpv78nc)** to view a video on the application
 
 
 ## Questions
