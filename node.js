@@ -18,7 +18,7 @@ const mainMenu = () => {
             name: 'first',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager', 'Delete Employee', 'Delete Role', 'Delete Department'],
         })
         .then((answer) => {
             // based on their answer a function will execute
@@ -40,6 +40,12 @@ const mainMenu = () => {
                 updateEmployeeRole();
             } else if (answer.first === 'Update Employee Manager') {
                 updateEmployeeManager();
+            } else if (answer.first === 'Delete Employee') {
+                deleteEmployee();
+            } else if (answer.first === 'Delete Role') {
+                deleteRole();
+            } else if (answer.first === 'Delete Department') {
+                deleteDepartment();
             } else {
                 connection.end();
             }
@@ -576,6 +582,69 @@ const updateEmployeeManager = () => {
 
         })
 
+};
+
+let deleteNames = [];
+
+const deleteEmployee = () => {
+    connection.query(
+        `
+        SELECT id, CONCAT(first_name,' ',last_name) AS employees
+        FROM employee
+        `,
+        (err, names) => {
+            if (err) throw err;
+
+            for (let i = 0; i < names.length; i++) {
+                deleteNames.push(names[i].employees);
+            }
+            inquirer
+                .prompt(
+                    // [
+                    {
+                        name: 'delName',
+                        type: 'list',
+                        message: 'Select the employee name of who you wish to terminate',
+                        choices: deleteNames
+                    }
+                    // , {
+                    //     name: 'areYouSure',
+                    //     type: 'list',
+                    //     message: 'Are you sure you want to terminate this employee?',
+                    //     choices: ['Yes', 'No']
+                    // }
+                    // ]
+                )
+                .then((answer) => {
+
+                    // if (answer.areYouSure === 'Yes') {
+
+                    let employeeID;
+
+                    for (let i = 0; i < names.length; i++) {
+                        if (answer.delName === names[i].employees) {
+                            employeeID = names[i].id;
+                        }
+                    }
+
+                    console.log(employeeID)
+
+                    connection.query(
+                            'DELETE FROM employee WHERE id = employeeID',
+                            (err, res) => {
+                                if (err) return err;
+
+                                console.log(`\n The employee named ${answer.delName} has been terminated! \n`)
+                                mainMenu();
+                            }
+                        )
+                        // } else {
+
+                    //     console.log(`\n The employee named ${answer.delName} has not been terminated \n`)
+                    //     mainMenu();
+                    // }
+                })
+        })
 };
 
 
