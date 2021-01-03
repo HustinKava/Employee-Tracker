@@ -337,7 +337,7 @@ let deptNames = [];
 const addRole = () => {
     connection.query(
         `
-        SELECT name 
+        SELECT id, name
         FROM department
         `,
         (err, department) => {
@@ -389,6 +389,8 @@ const addRole = () => {
                             deptID = department[i].id
                         }
                     }
+
+                    // console.log(deptID)
 
                     connection.query(
                         'INSERT INTO roles SET ?', {
@@ -637,6 +639,65 @@ const deleteEmployee = () => {
                     } else {
 
                         console.log(`\n The employee named ${answer.delName} has not been terminated \n`)
+                        mainMenu();
+                    }
+                })
+        })
+};
+
+let deleteRoles = [];
+
+const deleteRole = () => {
+    connection.query(
+        `
+        SELECT id, title
+        FROM roles
+        `,
+        (err, roles) => {
+            if (err) throw err;
+
+            for (let i = 0; i < roles.length; i++) {
+                deleteRoles.push(roles[i].title);
+            }
+            inquirer
+                .prompt(
+                    [{
+                        name: 'delRole',
+                        type: 'list',
+                        message: 'Select the role that you wish to delete',
+                        choices: deleteRoles
+                    }, {
+                        name: 'areYouSure',
+                        type: 'list',
+                        message: 'Are you sure you want to delete this role? All employees with this role will also be removed',
+                        choices: ['Yes', 'No']
+                    }]
+                )
+                .then((answer) => {
+
+                    if (answer.areYouSure === 'Yes') {
+
+                        let roleID;
+
+                        for (let i = 0; i < roles.length; i++) {
+                            if (answer.delRole === roles[i].title) {
+                                roleID = roles[i].id;
+                            }
+                        }
+
+                        // console.log(roleID)
+
+                        connection.query(
+                            `DELETE FROM roles WHERE id = '${roleID}'`,
+                            (err, res) => {
+                                if (err) return err;
+
+                                console.log(`\n The role named ${answer.delRole} has been terminated! \n`)
+                                mainMenu();
+                            })
+                    } else {
+
+                        console.log(`\n The role named ${answer.delRole} has not been terminated \n`)
                         mainMenu();
                     }
                 })
