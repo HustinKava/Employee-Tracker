@@ -489,6 +489,95 @@ const updateEmployeeRole = () => {
 
 };
 
+let empNames = [];
+let empManagers = [];
+
+const updateEmployeeManager = () => {
+    connection.query(
+        `
+        SELECT id, CONCAT(first_name,' ',last_name) AS employees
+        FROM employee
+        WHERE employee.manager_id IS NOT NULL;
+        `,
+        (err, names) => {
+            if (err) throw err;
+
+            for (let i = 0; i < names.length; i++) {
+                empNames.push(names[i].employees);
+            }
+            connection.query(
+                `
+                SELECT id, CONCAT(first_name,' ',last_name) AS managers
+                FROM employee
+                WHERE employee.manager_id IS NULL;
+                `,
+                (err, manager) => {
+                    if (err) throw err;
+                    // console.log(results);
+                    for (let i = 0; i < manager.length; i++) {
+                        empManagers.push(manager[i].managers);
+                    }
+                    inquirer
+                        .prompt([{
+                            name: 'empName',
+                            type: 'list',
+                            message: 'Which employee name would you like to change the manager for?',
+                            choices: empNames
+                        }, {
+                            name: 'empManager',
+                            type: 'list',
+                            message: 'Please select the new manager for your selected employee',
+                            choices: empManagers
+                        }])
+                        .then((answer) => {
+
+                            console.log(empNames)
+                            console.log(empManagers)
+
+                            // Set variable for IDs
+                            let empID;
+                            // Set variable for Manager IDs
+                            let manID;
+
+                            // Getting the employee.id
+                            for (i = 0; i < names.length; i++) {
+                                if (answer.empName == names[i].employees) {
+                                    empID = names[i].id;
+                                    console.log(`employee id is ${empID}`)
+                                }
+                            }
+
+                            // getting the roles.id
+                            for (i = 0; i < manager.length; i++) {
+                                if (answer.empManager == manager[i].managers) {
+                                    manID = manager[i].id;
+                                    console.log(`manager id is ${manID}`)
+                                }
+                            }
+
+                            connection.query(
+                                'UPDATE employee SET ? WHERE ?', [{
+                                        manager_id: manID,
+                                    },
+                                    {
+                                        id: empID,
+                                    },
+                                ],
+                                (err, res) => {
+                                    if (err) return err;
+
+                                    console.log(`\n The employee named ${answer.empName}, has had their manager changed to: ${answer.empManager} \n`)
+                                    mainMenu();
+                                }
+                            )
+
+                        })
+                })
+
+        })
+
+};
+
 
 
 
