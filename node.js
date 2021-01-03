@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const password = require('./password');
 const consoleTable = require('console.table');
 const logo = require('asciiart-logo');
+const chalk = require('chalk');
 
 // Global variables to store values
 let departmentChoices = [];
@@ -60,6 +61,7 @@ const start = () => {
 
 // The main menu function is the base for this application where the user will be able to select what they want to do
 const mainMenu = () => {
+    console.log(chalk.green('Main Menu'))
     inquirer
         .prompt({
             name: 'first',
@@ -113,6 +115,7 @@ const viewEmployees = () => {
         `,
         (err, results) => {
             if (err) throw err;
+            console.log(chalk.green(`\n You are currently viewing all employees \n`))
             console.table(results)
             mainMenu();
         });
@@ -149,6 +152,7 @@ const viewEmployeesByDepartment = () => {
                         `,
                         (err, results) => {
                             if (err) throw err;
+                            console.log(chalk.green(`\n You are currently viewing all employees based on department that has been selected \n`))
                             console.table(results);
                             mainMenu()
                         })
@@ -193,6 +197,7 @@ const viewEmployeesByManager = () => {
                         `,
                         (err, results) => {
                             if (err) throw err;
+                            console.log(chalk.green(`\n You are currently viewing all employees based on the manager that has been selected \n`))
                             console.table(results);
                             mainMenu()
                         })
@@ -231,6 +236,7 @@ const viewEmployeesByRoles = () => {
                         `,
                         (err, results) => {
                             if (err) throw err;
+                            console.log(chalk.green(`\n You are currently viewing all employees based on the role that has been selected \n`))
                             console.table(results);
                             mainMenu()
                         })
@@ -284,6 +290,8 @@ const viewDepartmentBudget = () => {
                             }
 
                             totalDeptBudget.push(department)
+
+                            console.log(chalk.green(`\n You are currently viewing the total allocated budget for the department that has been selected \n`))
                             console.table(totalDeptBudget);
                             mainMenu()
                         })
@@ -388,7 +396,7 @@ const addEmployee = () => {
                                 (err, res) => {
                                     if (err) return err;
 
-                                    console.log(`\n The new employee named ${answer.firstName} ${answer.lastName} has been added \n`)
+                                    console.log(chalk.green(`\n The new employee named ${answer.firstName} ${answer.lastName} has been added \n`))
                                     mainMenu();
                                 }
                             )
@@ -423,7 +431,7 @@ const addDepartment = () => {
                 (err, res) => {
                     if (err) return err;
 
-                    console.log(`\n The new department named ${answer.departmentName} has been added \n`)
+                    console.log(chalk.green(`\n The new department named ${answer.departmentName} has been added \n`))
                     mainMenu();
                 }
             )
@@ -498,7 +506,7 @@ const addRole = () => {
                         (err, res) => {
                             if (err) return err;
 
-                            console.log(`\n The new role named ${answer.roleName} has been added \n`)
+                            console.log(chalk.green(`\n The new role named ${answer.roleName} has been added \n`))
                             mainMenu();
                         }
                     )
@@ -545,8 +553,8 @@ const updateEmployeeRole = () => {
                         }])
                         .then((answer) => {
 
-                            console.log(employeeNames)
-                            console.log(employeeRoles)
+                            // console.log(employeeNames)
+                            // console.log(employeeRoles)
 
                             // Set variable for IDs
                             let roleID;
@@ -557,7 +565,7 @@ const updateEmployeeRole = () => {
                             for (i = 0; i < names.length; i++) {
                                 if (answer.employeeName == names[i].employee) {
                                     employeeID = names[i].id;
-                                    console.log(`employee id is ${employeeID}`)
+                                    // console.log(`employee id is ${employeeID}`)
                                 }
                             }
 
@@ -565,7 +573,7 @@ const updateEmployeeRole = () => {
                             for (i = 0; i < roles.length; i++) {
                                 if (answer.employeeRole == roles[i].title) {
                                     roleID = roles[i].id;
-                                    console.log(`role id is ${roleID}`)
+                                    // console.log(`role id is ${roleID}`)
                                 }
                             }
 
@@ -580,7 +588,7 @@ const updateEmployeeRole = () => {
                                 (err, res) => {
                                     if (err) return err;
 
-                                    console.log(`\n The employee named ${answer.employeeName}, has had their role updated to the tile of: ${answer.employeeRole} \n`)
+                                    console.log(chalk.green(`\n The employee named ${answer.employeeName}, has had their role updated to the tile of: ${answer.employeeRole} \n`))
                                     mainMenu();
                                 }
                             )
@@ -632,8 +640,8 @@ const updateEmployeeManager = () => {
                         }])
                         .then((answer) => {
 
-                            console.log(empNames)
-                            console.log(empManagers)
+                            // console.log(empNames)
+                            // console.log(empManagers)
 
                             // Set variable for IDs
                             let empID;
@@ -644,7 +652,7 @@ const updateEmployeeManager = () => {
                             for (i = 0; i < names.length; i++) {
                                 if (answer.empName == names[i].employees) {
                                     empID = names[i].id;
-                                    console.log(`employee id is ${empID}`)
+                                    // console.log(`employee id is ${empID}`)
                                 }
                             }
 
@@ -652,7 +660,7 @@ const updateEmployeeManager = () => {
                             for (i = 0; i < manager.length; i++) {
                                 if (answer.empManager == manager[i].managers) {
                                     manID = manager[i].id;
-                                    console.log(`manager id is ${manID}`)
+                                    // console.log(`manager id is ${manID}`)
                                 }
                             }
 
@@ -667,7 +675,7 @@ const updateEmployeeManager = () => {
                                 (err, res) => {
                                     if (err) return err;
 
-                                    console.log(`\n The employee named ${answer.empName}, has had their manager changed to: ${answer.empManager} \n`)
+                                    console.log(chalk.green(`\n The employee named ${answer.empName}, has had their manager changed to: ${answer.empManager} \n`))
                                     mainMenu();
                                 }
                             )
@@ -725,12 +733,12 @@ const deleteEmployee = () => {
                             (err, res) => {
                                 if (err) return err;
 
-                                console.log(`\n The employee named ${answer.delName} has been terminated! \n`)
+                                console.log(chalk.green(`\n The employee named ${answer.delName} has been terminated! \n`))
                                 mainMenu();
                             })
                     } else {
 
-                        console.log(`\n The employee named ${answer.delName} has not been terminated \n`)
+                        console.log(chalk.green(`\n The employee named ${answer.delName} has not been terminated \n`))
                         mainMenu();
                     }
                 })
@@ -783,12 +791,12 @@ const deleteRole = () => {
                             (err, res) => {
                                 if (err) return err;
 
-                                console.log(`\n The role named ${answer.delRole} has been terminated! \n`)
+                                console.log(chalk.green(`\n The role named ${answer.delRole} has been terminated! \n`))
                                 mainMenu();
                             })
                     } else {
 
-                        console.log(`\n The role named ${answer.delRole} has not been terminated \n`)
+                        console.log(chalk.green(`\n The role named ${answer.delRole} has not been terminated \n`))
                         mainMenu();
                     }
                 })
@@ -839,12 +847,12 @@ const deleteDepartment = () => {
                             (err, res) => {
                                 if (err) return err;
 
-                                console.log(`\n The department named ${answer.delDepartment} has been terminated! \n`)
+                                console.log(chalk.green(`\n The department named ${answer.delDepartment} has been terminated! \n`))
                                 mainMenu();
                             })
                     } else {
 
-                        console.log(`\n The department named ${answer.delDepartment} has not been terminated \n`)
+                        console.log(chalk.green(`\n The department named ${answer.delDepartment} has not been terminated \n`))
                         mainMenu();
                     }
                 })
