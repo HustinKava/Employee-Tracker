@@ -1,7 +1,7 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const password = require('./password');
-// const consoleTable = require('console.table')
+const consoleTable = require('console.table')
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -18,7 +18,7 @@ const mainMenu = () => {
             name: 'first',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager', 'Delete Employee', 'Delete Role', 'Delete Department'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'View Department Budgets', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager', 'Delete Employee', 'Delete Role', 'Delete Department'],
         })
         .then((answer) => {
             // based on their answer a function will execute
@@ -30,6 +30,8 @@ const mainMenu = () => {
                 viewEmployeesByManager();
             } else if (answer.first === 'View All Employees by Roles') {
                 viewEmployeesByRoles();
+            } else if (answer.first === 'View Department Budgets') {
+                viewDepartmentBudget();
             } else if (answer.first === 'Add Employee') {
                 addEmployee();
             } else if (answer.first === 'Add Department') {
@@ -763,6 +765,59 @@ const deleteDepartment = () => {
         })
 };
 
+let deptBudgetNames = [];
+let deptBudgetTotal = 0;
+
+const viewDepartmentBudget = () => {
+    connection.query(
+        `
+        SELECT name
+        FROM department
+        `,
+        (err, department) => {
+            if (err) throw err;
+
+            for (let i = 0; i < department.length; i++) {
+                deptBudgetNames.push(department[i].name);
+
+            }
+            inquirer
+                .prompt({
+                    name: 'viewDeptNames',
+                    type: 'list',
+                    message: 'Which department would you like to view the total allocated budget for?',
+                    choices: deptBudgetNames
+                })
+                .then((answer) => {
+
+                    connection.query(
+                        `
+                        SELECT salary
+                        FROM department
+                        LEFT JOIN roles ON department.id = department_id
+                        WHERE department.name = '${answer.viewDeptNames}'
+                        `,
+                        (err, salary) => {
+                            if (err) throw err;
+
+                            let totalDeptBudget = [];
+
+                            for (let i = 0; i < salary.length; i++) {
+                                deptBudgetTotal += (salary[i].salary)
+                            }
+
+                            department = {
+                                Department: answer.viewDeptNames,
+                                Budget: deptBudgetTotal
+                            }
+
+                            totalDeptBudget.push(department)
+                            console.table(totalDeptBudget);
+                            mainMenu()
+                        })
+                })
+        })
+};
 
 // connect to the mysql server and sql database
 connection.connect((err) => {
