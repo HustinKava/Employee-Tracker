@@ -1,10 +1,28 @@
+// Require variables
 const mysql = require('mysql');
 const inquirer = require('inquirer');
 const password = require('./password');
 const consoleTable = require('console.table');
 const logo = require('asciiart-logo');
 
+// Global variables to store values
+let departmentChoices = [];
+let managerChoices = [];
+let rolesChoices = [];
+let deptBudgetNames = [];
+let deptBudgetTotal = 0;
+let newEmpRole = [];
+let newEmpManager = [];
+let deptNames = [];
+let employeeNames = [];
+let employeeRoles = [];
+let empNames = [];
+let empManagers = [];
+let deleteNames = [];
+let deleteRoles = [];
+let deleteDepartments = [];
 
+// Setting up mysql connection
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
@@ -14,12 +32,13 @@ const connection = mysql.createConnection({
     database: 'employee_trackerDB',
 });
 
-// connect to the mysql server and sql database
+// Connect to the mysql server and sql database
 connection.connect((err) => {
     if (err) throw err;
     start();
 });
 
+// Created a greeting for when the application is started
 const start = () => {
     console.log(
         logo({
@@ -37,19 +56,19 @@ const start = () => {
         .render()
     );
     mainMenu();
-}
+};
 
-
+// The main menu function is the base for this application where the user will be able to select what they want to do
 const mainMenu = () => {
     inquirer
         .prompt({
             name: 'first',
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'View Department Budgets', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager', 'Delete Employee', 'Delete Role', 'Delete Department'],
+            choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'View All Employees by Roles', 'View Department Budgets', 'Add Employee', 'Add Department', 'Add Role', 'Update Employee Role', 'Update Employee Manager', 'Delete Employee', 'Delete Role', 'Delete Department', 'Exit'],
         })
         .then((answer) => {
-            // based on their answer a function will execute
+            // Based on user answer a function will execute
             if (answer.first === 'View All Employees') {
                 viewEmployees();
             } else if (answer.first === 'View All Employees By Department') {
@@ -76,12 +95,13 @@ const mainMenu = () => {
                 deleteRole();
             } else if (answer.first === 'Delete Department') {
                 deleteDepartment();
-            } else {
+            } else if (answer.first === 'Exit') {
                 connection.end();
             }
         });
 };
 
+// View all employees by id, first name, last name, title, department, salary and manager name if applicable 
 const viewEmployees = () => {
     connection.query(
         `
@@ -98,8 +118,7 @@ const viewEmployees = () => {
         });
 };
 
-let departmentChoices = []
-
+// View all employees based on department the user selects. This will show the employee id, first name, last name, title, salary and manager
 const viewEmployeesByDepartment = () => {
     connection.query(
         `
@@ -138,8 +157,7 @@ const viewEmployeesByDepartment = () => {
         })
 };
 
-let managerChoices = [];
-
+// View all employees by manager selectect. This will show the employee id, first name, last name, title, department and salary
 const viewEmployeesByManager = () => {
     connection.query(
         `
@@ -182,8 +200,7 @@ const viewEmployeesByManager = () => {
         })
 };
 
-let rolesChoices = []
-
+// This will show all employees for the role that has been selected. The table will show employee id, first name, last name, department and salary
 const viewEmployeesByRoles = () => {
     connection.query(
         `
@@ -222,9 +239,59 @@ const viewEmployeesByRoles = () => {
         })
 };
 
-let newEmpRole = [];
-let newEmpManager = [];
+// This will show all department names which the user can then select and show the total budget for
+const viewDepartmentBudget = () => {
+    connection.query(
+        `
+        SELECT name
+        FROM department
+        `,
+        (err, department) => {
+            if (err) throw err;
 
+            for (let i = 0; i < department.length; i++) {
+                deptBudgetNames.push(department[i].name);
+
+            }
+            inquirer
+                .prompt({
+                    name: 'viewDeptNames',
+                    type: 'list',
+                    message: 'Which department would you like to view the total allocated budget for?',
+                    choices: deptBudgetNames
+                })
+                .then((answer) => {
+
+                    connection.query(
+                        `
+                        SELECT salary
+                        FROM department
+                        LEFT JOIN roles ON department.id = department_id
+                        WHERE department.name = '${answer.viewDeptNames}'
+                        `,
+                        (err, salary) => {
+                            if (err) throw err;
+
+                            let totalDeptBudget = [];
+
+                            for (let i = 0; i < salary.length; i++) {
+                                deptBudgetTotal += (salary[i].salary)
+                            }
+
+                            department = {
+                                Department: answer.viewDeptNames,
+                                Budget: deptBudgetTotal
+                            }
+
+                            totalDeptBudget.push(department)
+                            console.table(totalDeptBudget);
+                            mainMenu()
+                        })
+                })
+        })
+};
+
+// This will allow a user to add a new employee. User can enter the first name, last name, role and manager name if applicable
 const addEmployee = () => {
     connection.query(
         `
@@ -333,6 +400,7 @@ const addEmployee = () => {
 
 };
 
+// This will allow the user to create a new department
 const addDepartment = () => {
     inquirer
         .prompt({
@@ -362,8 +430,7 @@ const addDepartment = () => {
         })
 };
 
-let deptNames = [];
-
+// This will allow the user to create a new role, provide a salary for the position and choose which department the role belongs to
 const addRole = () => {
     connection.query(
         `
@@ -440,9 +507,7 @@ const addRole = () => {
         })
 };
 
-let employeeNames = [];
-let employeeRoles = [];
-
+// This will allow the user to change an employees current role
 const updateEmployeeRole = () => {
     connection.query(
         `
@@ -527,9 +592,7 @@ const updateEmployeeRole = () => {
 
 };
 
-let empNames = [];
-let empManagers = [];
-
+// This will allow the user to change an employees existing manager to a different one
 const updateEmployeeManager = () => {
     connection.query(
         `
@@ -616,8 +679,7 @@ const updateEmployeeManager = () => {
 
 };
 
-let deleteNames = [];
-
+// This will allow the user to delete an employee
 const deleteEmployee = () => {
     connection.query(
         `
@@ -675,8 +737,7 @@ const deleteEmployee = () => {
         })
 };
 
-let deleteRoles = [];
-
+// This will allow the user to delete an existing role
 const deleteRole = () => {
     connection.query(
         `
@@ -734,8 +795,7 @@ const deleteRole = () => {
         })
 };
 
-let deleteDepartments = [];
-
+// This will allow the user to delete an existing department
 const deleteDepartment = () => {
     connection.query(
         `
@@ -774,8 +834,6 @@ const deleteDepartment = () => {
                             }
                         }
 
-                        // console.log(roleID)
-
                         connection.query(
                             `DELETE FROM department WHERE id = '${deptID}'`,
                             (err, res) => {
@@ -789,60 +847,6 @@ const deleteDepartment = () => {
                         console.log(`\n The department named ${answer.delDepartment} has not been terminated \n`)
                         mainMenu();
                     }
-                })
-        })
-};
-
-let deptBudgetNames = [];
-let deptBudgetTotal = 0;
-
-const viewDepartmentBudget = () => {
-    connection.query(
-        `
-        SELECT name
-        FROM department
-        `,
-        (err, department) => {
-            if (err) throw err;
-
-            for (let i = 0; i < department.length; i++) {
-                deptBudgetNames.push(department[i].name);
-
-            }
-            inquirer
-                .prompt({
-                    name: 'viewDeptNames',
-                    type: 'list',
-                    message: 'Which department would you like to view the total allocated budget for?',
-                    choices: deptBudgetNames
-                })
-                .then((answer) => {
-
-                    connection.query(
-                        `
-                        SELECT salary
-                        FROM department
-                        LEFT JOIN roles ON department.id = department_id
-                        WHERE department.name = '${answer.viewDeptNames}'
-                        `,
-                        (err, salary) => {
-                            if (err) throw err;
-
-                            let totalDeptBudget = [];
-
-                            for (let i = 0; i < salary.length; i++) {
-                                deptBudgetTotal += (salary[i].salary)
-                            }
-
-                            department = {
-                                Department: answer.viewDeptNames,
-                                Budget: deptBudgetTotal
-                            }
-
-                            totalDeptBudget.push(department)
-                            console.table(totalDeptBudget);
-                            mainMenu()
-                        })
                 })
         })
 };
