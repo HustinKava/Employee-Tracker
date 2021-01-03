@@ -402,6 +402,94 @@ const addRole = () => {
         })
 };
 
+let employeeNames = [];
+let employeeRoles = [];
+
+const updateEmployeeRole = () => {
+    connection.query(
+        `
+        SELECT id, CONCAT(first_name,' ',last_name) AS employee
+        FROM employee
+        `,
+        (err, names) => {
+            if (err) throw err;
+
+            for (let i = 0; i < names.length; i++) {
+                employeeNames.push(names[i].employee);
+            }
+            connection.query(
+                `
+                SELECT id, title  
+                FROM roles
+                `,
+                (err, roles) => {
+                    if (err) throw err;
+                    // console.log(results);
+                    for (let i = 0; i < roles.length; i++) {
+                        employeeRoles.push(roles[i].title);
+                    }
+                    inquirer
+                        .prompt([{
+                            name: 'employeeName',
+                            type: 'list',
+                            message: 'Which employee name would you like to change the role for?',
+                            choices: employeeNames
+                        }, {
+                            name: 'employeeRole',
+                            type: 'list',
+                            message: 'Please select the new role for your selected employee',
+                            choices: employeeRoles
+                        }])
+                        .then((answer) => {
+
+                            console.log(employeeNames)
+                            console.log(employeeRoles)
+
+                            // Set variable for IDs
+                            let roleID;
+                            // Default Manager value as null
+                            let employeeID;
+
+                            // Getting the employee.id
+                            for (i = 0; i < names.length; i++) {
+                                if (answer.employeeName == names[i].employee) {
+                                    employeeID = names[i].id;
+                                    console.log(`employee id is ${employeeID}`)
+                                }
+                            }
+
+                            // getting the roles.id
+                            for (i = 0; i < roles.length; i++) {
+                                if (answer.employeeRole == roles[i].title) {
+                                    roleID = roles[i].id;
+                                    console.log(`role id is ${roleID}`)
+                                }
+                            }
+
+                            connection.query(
+                                'UPDATE employee SET ? WHERE ?', [{
+                                        roles_id: roleID,
+                                    },
+                                    {
+                                        id: employeeID,
+                                    },
+                                ],
+                                (err, res) => {
+                                    if (err) return err;
+
+                                    console.log(`\n The employee named ${answer.employeeName}, has had their role updated to the tile of: ${answer.employeeRole} \n`)
+                                    mainMenu();
+                                }
+                            )
+
+                        })
+                })
+
+        })
+
+};
+
+
 
 
 // connect to the mysql server and sql database
