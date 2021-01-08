@@ -28,8 +28,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    // Your password should be located in password.js file to maintain privacy. I have added mine to gitignore :)
-    password: `${password}`,
+    password: '',
     database: 'employee_trackerDB',
 });
 
